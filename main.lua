@@ -45,8 +45,8 @@ function love.load()
     --Store ball position and starting speed
     ballX = WINDOW_WIDTH / 2
     ballY = WINDOW_HEIGHT / 2
-    ballDX = math.random(2) == 1 and 100 or -100
-    ballDY = math.random(-50, 50)
+    ballDX = math.random(2) == 1 and 200 or -200
+    ballDY = math.random(-100, 100)
 
     --Setup game state
     gameState = 'start'
@@ -106,6 +106,24 @@ function love.update(dt)
             ballDY = -ballDY
         end
 
+        --Check if player 1 has scored
+        if ballX >= WINDOW_WIDTH then 
+            player1Score = player1Score + 1
+            ballX = WINDOW_WIDTH / 2
+            ballY = WINDOW_HEIGHT / 2
+            ballDX = math.random(2) == 1 and 100 or -100
+            ballDY = math.random(-50, 50)
+        end 
+
+        --Check if player 2 has scored
+        if ballX <= 0 then 
+            player2Score = player2Score + 1
+            ballX = WINDOW_WIDTH / 2
+            ballY = WINDOW_HEIGHT / 2
+            ballDX = math.random(2) == 1 and 100 or -100
+            ballDY = math.random(-50, 50)
+        end 
+
         --Move the ball
         ballX = ballX + ballDX * dt
         ballY = ballY + ballDY * dt
@@ -121,6 +139,10 @@ function love.keypressed(key)
             love.event.quit()
         elseif gameState == 'play' then
             gameState = 'start'
+            --Reset Scores 
+            player1Score = 0
+            player2Score = 0
+            
             --Store paddle positions on y axis
             player1Y = WINDOW_HEIGHT / 2 - 40
             player2Y = WINDOW_HEIGHT / 2 - 40
@@ -144,7 +166,7 @@ function love.draw()
 
     --Display Welcome
     love.graphics.setFont(smallFont)
-    love.graphics.printf('Welcome to Pong!', 0, 0, WINDOW_WIDTH, 'center')
+    love.graphics.printf('Pong', 0, 0, WINDOW_WIDTH, 'center')
 
     --Render scores
     love.graphics.setFont(scoreFont)
