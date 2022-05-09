@@ -4,7 +4,7 @@ WINDOW_HEIGHT = 600
 
 
 --Controls speed of paddle
-PADDLE_SPEED = 200
+PADDLE_SPEED = 500
 
 function love.load()
     --Setup window
@@ -47,8 +47,8 @@ function love.load()
     ball = {
         x = WINDOW_WIDTH / 2, 
         y = WINDOW_HEIGHT / 2, 
-        dx = math.random(2) == 1 and 200 or -200,
-        dy = math.random(-100, 100),
+        dx = math.random(2) == 1 and 300 or -300,
+        dy = math.random(-150, 150),
         size = 8
     }
 
@@ -87,9 +87,9 @@ function love.update(dt)
            ball.x = player1.x + 20
 
            if ball.dy < 0 then
-                ball.dy = -math.random(10, 150)
+                ball.dy = -math.random(10, 50)
            else
-                ball.dy = math.random(10, 150)
+                ball.dy = math.random(10, 50)
            end
         end 
 
@@ -182,8 +182,8 @@ end
 function resetBall() 
     ball.x = WINDOW_WIDTH / 2
     ball.y = WINDOW_HEIGHT / 2
-    ball.dx = math.random(2) == 1 and 200 or -200
-    ball.dy = math.random(-100, 100)
+    ball.dx = math.random(2) == 1 and 300 or -300
+    ball.dy = math.random(-150, 150)
 end 
 
 --Checks if a ball is collides with a player
