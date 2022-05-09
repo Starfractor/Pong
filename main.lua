@@ -27,26 +27,36 @@ function love.load()
         vsync = true
     })
 
-    --Initialize player scores
-    player1Score = 0
-    player2Score = 0
+    --Setup objects
+    player1 = {
+        x = 10, 
+        y = WINDOW_HEIGHT / 2 - 40, 
+        width = 20, 
+        height = 80, 
+        score = 0
+    }
+
+    player2 = {
+        x = WINDOW_WIDTH - 30, 
+        y = WINDOW_HEIGHT / 2 - 40, 
+        width = 20, 
+        height = 80, 
+        score = 0
+    }
+
+    ball = {
+        x = WINDOW_WIDTH / 2, 
+        y = WINDOW_HEIGHT / 2, 
+        dx = math.random(2) == 1 and 200 or -200,
+        dy = math.random(-100, 100),
+        size = 8
+    }
 
     --Store paddle positions 
     player1X = 10
     player1Y = WINDOW_HEIGHT / 2 - 40
     player2X = WINDOW_WIDTH - 30
     player2Y = WINDOW_HEIGHT / 2 - 40
-
-    --Store paddle and ball size
-    paddleWidth = 20
-    paddleHeight = 80
-    ballSize = 8
-
-    --Store ball position and starting speed
-    ballX = WINDOW_WIDTH / 2
-    ballY = WINDOW_HEIGHT / 2
-    ballDX = math.random(2) == 1 and 200 or -200
-    ballDY = math.random(-100, 100)
 
     --Setup game state
     gameState = 'start'
@@ -57,76 +67,70 @@ function love.update(dt)
 
     if gameState == 'play' then 
         --Player 1 movement
-        if love.keyboard.isDown('w') and player1Y > 0 then
-            player1Y = player1Y - PADDLE_SPEED * dt
-        elseif love.keyboard.isDown('s') and player1Y < WINDOW_HEIGHT - 80 then
-            player1Y = player1Y + PADDLE_SPEED * dt
+        if love.keyboard.isDown('w') and player1.y > 0 then
+            player1.y = player1.y - PADDLE_SPEED * dt
+        elseif love.keyboard.isDown('s') and player1.y < WINDOW_HEIGHT - 80 then
+            player1.y = player1.y + PADDLE_SPEED * dt
         end
 
 
         ---Player 2 movement
-        if love.keyboard.isDown('i') and player2Y > 0 then
-            player2Y = player2Y - PADDLE_SPEED * dt
-        elseif love.keyboard.isDown('k') and player2Y < WINDOW_HEIGHT - 80 then
-            player2Y = player2Y + PADDLE_SPEED * dt
+        if love.keyboard.isDown('i') and player2.y > 0 then
+            player2.y = player2.y - PADDLE_SPEED * dt
+        elseif love.keyboard.isDown('k') and player2.y < WINDOW_HEIGHT - 80 then
+            player2.y = player2.y + PADDLE_SPEED * dt
         end
 
         --If the ball hits player 1 paddle
-        if ballX <= player1X + paddleWidth and player1X <= ballX + ballSize and ballY <= player1Y + paddleHeight and player1Y <= ballY + ballSize then
-           ballDX = -ballDX * 1.03
-           ballX = player1X + 20
+        if collides(ball, player1) then
+           ball.dx = -ball.dx * 1.03
+           ball.x = player1.x + 20
 
-           if ballDY < 0 then
-                ballDY = -math.random(10, 150)
+           if ball.dy < 0 then
+                ball.dy = -math.random(10, 150)
            else
-                ballDY = math.random(10, 150)
+                ball.dy = math.random(10, 150)
            end
         end 
 
         --If the ball hits player 2 paddle
-        if ballX <= player2X + paddleWidth and player2X <= ballX + ballSize and ballY <= player2Y + paddleHeight and player2Y <= ballY + ballSize then
-            ballDX = -ballDX * 1.03
-            ballX = player2X - 20
+        if collides(ball, player2) then
+            ball.dx = -ball.dx * 1.03
+            ball.x = player2.x - 20
  
-            if ballDY < 0 then
-                 ballDY = -math.random(10, 150)
+            if ball.dy < 0 then
+                 ball.dy = -math.random(10, 150)
             else
-                 ballDY = math.random(10, 150)
+                 ball.dy = math.random(10, 150)
             end
         end 
 
         --Make sure ball doesn't fall out of bounds
-        if ballY <= 0 then 
-            ballY = 0
-            ballDY = -ballDY
+        if ball.y <= 0 then 
+            ball.y = 0
+            ball.dy = -ball.dy
         end
          
-        if ballY >= WINDOW_HEIGHT then 
-            ballY = WINDOW_HEIGHT
-            ballDY = -ballDY
+        if ball.y >= WINDOW_HEIGHT then 
+            ball.y = WINDOW_HEIGHT
+            ball.dy = -ball.y
         end
 
         --Check if player 1 has scored
-        if ballX >= WINDOW_WIDTH then 
-            player1Score = player1Score + 1
-            ballX = WINDOW_WIDTH / 2
-            ballY = WINDOW_HEIGHT / 2
-            ballDX = math.random(2) == 1 and 100 or -100
-            ballDY = math.random(-50, 50)
-        end 
+        if ball.x >= WINDOW_WIDTH then 
+            player1.score = player1.score + 1
+            resetBall()
+        end
 
         --Check if player 2 has scored
-        if ballX <= 0 then 
-            player2Score = player2Score + 1
-            ballX = WINDOW_WIDTH / 2
-            ballY = WINDOW_HEIGHT / 2
-            ballDX = math.random(2) == 1 and 100 or -100
-            ballDY = math.random(-50, 50)
+        if ball.x <= 0 then 
+            player2.score = player2.score + 1
+            resetBall()
         end 
 
         --Move the ball
-        ballX = ballX + ballDX * dt
-        ballY = ballY + ballDY * dt
+        ball.x = ball.x + ball.dx * dt
+        ball.y = ball.y + ball.dy * dt
     end 
 
 end
@@ -140,18 +144,15 @@ function love.keypressed(key)
         elseif gameState == 'play' then
             gameState = 'start'
             --Reset Scores 
-            player1Score = 0
-            player2Score = 0
+            player1.score = 0
+            player2.score = 0
             
             --Store paddle positions on y axis
-            player1Y = WINDOW_HEIGHT / 2 - 40
-            player2Y = WINDOW_HEIGHT / 2 - 40
+            player1.y = WINDOW_HEIGHT / 2 - 40
+            player2.y = WINDOW_HEIGHT / 2 - 40
 
-            --Store ball position and starting speed
-            ballX = WINDOW_WIDTH / 2
-            ballY = WINDOW_HEIGHT / 2
-            ballDX = math.random(2) == 1 and 100 or -100
-            ballDY = math.random(-50, 50)
+            resetBall()
+
         end 
     end
 
@@ -161,25 +162,39 @@ function love.keypressed(key)
     end 
 end
 
-
 function love.draw()
 
-    --Display Welcome
+    --Display fonts
     love.graphics.setFont(smallFont)
     love.graphics.printf('Pong', 0, 0, WINDOW_WIDTH, 'center')
-
-    --Render scores
     love.graphics.setFont(scoreFont)
-    love.graphics.print(tostring(player1Score), 50, 0)
-    love.graphics.print(tostring(player2Score), WINDOW_WIDTH - 90, 0)
+    love.graphics.print(tostring(player1.score), 50, 0)
+    love.graphics.print(tostring(player2.score), WINDOW_WIDTH - 90, 0)
 
-    --Render left paddle
-    love.graphics.rectangle('fill', player1X, player1Y, paddleWidth, paddleHeight)
-
-    --Render right paddle
-    love.graphics.rectangle('fill', player2X, player2Y, paddleWidth, paddleHeight)
-
-    -- render ball 
-    love.graphics.rectangle('fill', ballX, ballY, ballSize, ballSize)
+    --Render objects
+    love.graphics.rectangle('fill', player1.x, player1.y, player1.width, player1.height)
+    love.graphics.rectangle('fill', player2.x, player2.y, player2.width, player2.height)
+    love.graphics.rectangle('fill', ball.x, ball.y, ball.size, ball.size)
 
 end
+
+--Resets the ball back to the center with a random speed
+function resetBall() 
+    ball.x = WINDOW_WIDTH / 2
+    ball.y = WINDOW_HEIGHT / 2
+    ball.dx = math.random(2) == 1 and 200 or -200
+    ball.dy = math.random(-100, 100)
+end 
+
+--Checks if a ball is collides with a player
+function collides(ball, player) 
+    if ball.x > player.x + player.width or player.x > ball.x + ball.size then
+        return false
+    end
+
+    if ball.y > player.y + player.height or player.y > ball.y + ball.size then
+        return false
+    end 
+
+    return true
+end 
